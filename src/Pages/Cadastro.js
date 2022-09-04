@@ -29,16 +29,33 @@ const DataTableCrudCandidato = () => {
         usercad: ''
     };
 
+    let emptyContato = {
+        id: "",
+        idcandidato:"",
+        tipo: "",
+        valor:"",
+        ativo: '',
+        dtcad: '',
+        usercad: ''
+    }
+
     const [candidatos, setCandidatos] = useState(null);
+    const [contatos, setContatos] = useState(null);
     const [candidatoDialog, setCandidatoDialog] = useState(false);
+    const [contatoDialog, setContatoDialog] = useState(false);
     const [deleteCandidatoDialog, setDeleteCandidatoDialog] = useState(false);
+    const [deleteContatoDialog, setDeleteContatoDialog] = useState(false);
     const [deleteCandidatosDialog, setDeleteCandidatosDialog] = useState(false);
     const [candidato, setCandidato] = useState(emptyCandidato);
+    const [contato, setContato] = useState(emptyContato);
     const [selectedCandidatos, setSelectedCandidatos] = useState(null);
     const [submitted, setSubmitted] = useState(false);
+    const [submittedContato, setSubmittedContato] = useState(false);
     const [globalFilter, setGlobalFilter] = useState(null);
     const [selectedSexo, setSelectedSexo] = useState(null);
+    const [selectedTipoContato, setSelectedTipoContato] = useState(null);
     const [selectedEstadoCivil, setSelectedEstadoCivil] = useState(null);
+    const [mostraInput, setMostraInput]=useState(false)
     const toast = useRef(null);
     const dt = useRef(null);
     const load = useRef(null);
@@ -65,6 +82,23 @@ const DataTableCrudCandidato = () => {
         fetchAllcandidatos()
     },[]); 
 
+
+    const fetchContatoscandidato = (id)=>{
+        load.current = true
+        async function getAll(){
+            const result = await Api.post("contatos/procurar", {
+                idcandidato:parseInt(id)
+            })
+            if(result.data){
+                setContatos(result.data)
+            }
+        }
+        if(load.current){
+            getAll()
+        }
+        load.current = false;
+    }
+
     const newCandidatos=()=>{
         load.current=true;
         async function newCandidato(){
@@ -77,6 +111,21 @@ const DataTableCrudCandidato = () => {
         }
         if(load.current){
             newCandidato()
+        }
+        load.current=false
+    }
+
+    const newCandidatoConato=()=>{
+        load.current=true;
+        async function newCandidatoContato(){
+            const result = await Api.post("contatos",{usercad: "Usuário"})
+            if(result.data){
+                contato.id = result.data.id
+                setContatoDialog(true);
+            }
+        }
+        if(load.current){
+            newCandidatoContato()
         }
         load.current=false
     }
@@ -109,6 +158,30 @@ const DataTableCrudCandidato = () => {
         load.current =false
     }
     
+    const saveDataContatos=(id)=>{
+        load.current = true
+        async function save() {
+            let idcandidato =candidato.id
+            const result = await Api.post(`contatos/${id}/atualizar`,
+                {
+                    id: id,
+                    idcandidato: parseInt(idcandidato),
+                    tipo: selectedTipoContato,
+                    valor: contato.valor,
+                })
+            if(result.data === true){
+                setContato(emptyContato);
+                setContatoDialog(false);
+                fetchContatoscandidato(candidato.id);        
+                setSelectedTipoContato(null)
+            }
+        }
+        if(load.current){
+            save()
+        }
+        load.current =false
+    }
+
     const dropCandidatos=(id)=>{
         load.current = true
             async function drop(){
@@ -125,8 +198,28 @@ const DataTableCrudCandidato = () => {
         load.current =false
     }
 
+    const dropCotato=(id)=>{
+        load.current = true
+            async function drop(){
+                const response = await Api.post(`contatos/${id}/excluir`,{
+                    id: parseInt(id)  
+                })
+            if(response.data === true){
+                fetchContatoscandidato(candidato.id)
+            }
+            }
+            if(load.current){
+                drop()
+            }
+        load.current =false
+    }
+
     const openNew = () => {
         newCandidatos()
+    }
+
+    const newContato = () => {
+        newCandidatoConato()
     }
 
     const hideDialog = () => {
@@ -134,6 +227,13 @@ const DataTableCrudCandidato = () => {
         setCandidatoDialog(false);
         setSelectedSexo(null);
         setSelectedEstadoCivil(null)
+        setContatos(null)
+        setCandidato(emptyCandidato)
+    }
+    
+    const hideDialogContatos = () => {
+        setContatoDialog(false)
+        setSelectedTipoContato(null)
     }
 
     const hideDeleteCandidatoDialog = () => {
@@ -168,9 +268,19 @@ const DataTableCrudCandidato = () => {
         }
     }
 
+    const saveContato = () => {
+        setSubmittedContato(true);
+        if (contato.valor.trim()) {
+            saveDataContatos(contato.id)
+            toast.current.show({ severity: 'success', summary: 'Sucesso', detail: 'Contato Criado', life: 3000 });
+            setContato(emptyContato);
+        }
+    }
+
     const editCandidato = (candidato) => {
         setCandidato({...candidato});
         setSelectedSexo(candidato.sexo);
+        fetchContatoscandidato(candidato.id)
         setSelectedEstadoCivil(candidato.estadocivil)
         setCandidatoDialog(true);
     }
@@ -178,6 +288,11 @@ const DataTableCrudCandidato = () => {
     const confirmDeleteCandidato = (candidato) => {
         setCandidato(candidato);
         setDeleteCandidatoDialog(true);
+    }
+
+    const confirmDeleteContato = (contato) => {
+        setContato(contato);
+        setDeleteContatoDialog(true);
     }
 
     const deleteCandidato = () => {
@@ -202,15 +317,18 @@ const DataTableCrudCandidato = () => {
 
         return index;
     }
-
-    const createId = () => {
-        let id = '';
-        let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        for (let i = 0; i < 5; i++) {
-            id += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return id;
+   
+    const deleteContato = () => {
+        let _contatos = contatos.filter(val => val.id !== contato.id);
+        let _removeContato = contatos.filter(val => val.id === contato.id);
+        let id = _removeContato[0].id
+        dropCotato(id)
+        setContatos(_contatos);
+        setDeleteContatoDialog(false);
+        setContato(emptyContato);
+        toast.current.show({ severity: 'success', summary: 'Successful', detail: 'Contato Deletado', life: 3000 });
     }
+
 
     const confirmDeleteSelected = () => {
         setDeleteCandidatosDialog(true);
@@ -236,6 +354,35 @@ const DataTableCrudCandidato = () => {
         setCandidato(_candidato);
     }
 
+    const onInputChangeContato = (e, name) => {
+        const val = (e.target && e.target.value) || '';
+        let _contato = {...contato};
+        _contato[`${name}`] = val;
+
+        setContato(_contato);
+    }
+
+    const carregaInputContato = (e) => {
+        setSelectedTipoContato(e)
+        tipoDeInputValorContato(e)
+    }
+
+
+    const tipoDeInputValorContato = (tipo) => {
+        switch (tipo) {
+            case "Telefone":
+                setMostraInput(true)
+                break
+            case "WhatsApp":
+                setMostraInput(true)
+                break;
+            case "E-mail":
+                setMostraInput(false)
+                break;
+            default:
+                setMostraInput(false)
+        }            
+    }
 
     const leftToolbarTemplate = () => {
         return (
@@ -247,11 +394,29 @@ const DataTableCrudCandidato = () => {
     }
 
 
+    const leftToolbarTemplateContatos = () => {
+        return (
+            <React.Fragment>
+                <Button icon="pi pi-plus" className="p-button p-button-success p-button-outlined w-full" label="Novo" onClick={newContato} />
+            </React.Fragment>
+        )
+    }
+
+
+
     const actionBodyTemplate = (rowData) => {
         return (
             <React.Fragment>
                 <Button icon="pi pi-pencil" className="p-button-rounded p-button-success mr-2" onClick={() => editCandidato(rowData)} />
                 <Button icon="pi pi-trash" className="p-button-rounded p-button-warning" onClick={() => confirmDeleteCandidato(rowData)} />
+            </React.Fragment>
+        );
+    }
+
+    const actionBodyTemplateConatatos = (rowData) => {
+        return (
+            <React.Fragment>
+                <Button icon="pi pi-times" className="p-button w-6 p-button-danger p-button-outlined" onClick={() => confirmDeleteContato(rowData)} />
             </React.Fragment>
         );
     }
@@ -266,10 +431,41 @@ const DataTableCrudCandidato = () => {
         </div>
     );
     
+    const headerContatos = (
+        <div className="table-header">
+            <h5 className="mx-0 my-1">Contatos</h5>
+        </div>
+    );
+
     const candidatoDialogFooter = (
         <React.Fragment>
+            <div className="grid ">
+                <div className="col-6 md:col-6 lg:col-6">
+                <div className="datatable-crud">
+                    <div className="card">
+                    <Toolbar left={leftToolbarTemplateContatos}></Toolbar>
+                    <DataTable value={contatos} selection                     dataKey="id"  header={headerContatos} responsiveLayout="scroll">
+                        <Column field="id" header="Código"></Column>
+                        <Column field="tipo" header="Tipo"></Column>
+                        <Column field="valor" header="Contato"></Column>
+                        <Column body={actionBodyTemplateConatatos} header="Excluir"></Column>
+                    </DataTable>
+                </div>
+            </div>
+                </div>
+                <div className="col-6 md:col-6 lg:col-6"></div>
+            </div>
             <Button label="Cancelar" icon="pi pi-times" className="p-button-text" onClick={hideDialog} />
             <Button label="Salvar" icon="pi pi-check" className="p-button-text" onClick={saveCandidato} />
+        </React.Fragment>
+    );
+
+    const contatoDialogFooter = (
+        <React.Fragment>
+            <div className="flex justify-content-center">
+                <Button label="Cancelar" icon="pi pi-times"         className="p-button-text" onClick={hideDialogContatos} />
+                <Button label="Salvar" icon="pi pi-check" className="p-button-text" onClick={saveContato} />
+            </div>
         </React.Fragment>
     );
 
@@ -280,6 +476,13 @@ const DataTableCrudCandidato = () => {
         </React.Fragment>
     );
     
+    const deleteContatoDialogFooter = (
+        <React.Fragment>
+            <Button label="Não" icon="pi pi-times" className="p-button-text" onClick={hideDeleteCandidatoDialog} />
+            <Button label="Sim" icon="pi pi-check" className="p-button-text" onClick={deleteContato} />
+        </React.Fragment>
+    );
+
     const deleteCandidatosDialogFooter = (
         <React.Fragment>
             <Button label="Não" icon="pi pi-times" className="p-button-text" onClick={hideDeleteCandidatosDialog} />
@@ -299,6 +502,11 @@ const DataTableCrudCandidato = () => {
         {name:"Viuvo(a)", value:"Viuvo(a)"},
     ]
 
+    const tiposContatosOpcoes=[
+        {name:"E-mail", value:"E-mail"},
+        {name:"Telefone", value:"Telefone"},
+        {name:"WhatsApp", value:"WhatsApp"},
+    ]
     return (
         <div className="datatable-crud">
             <Toast ref={toast} />
@@ -369,6 +577,13 @@ const DataTableCrudCandidato = () => {
                     {candidato && <span>Tem certeza de que deseja excluir?</span>}
                 </div>
             </Dialog>
+         
+            <Dialog visible={deleteContatoDialog} style={{ width: '450px' }} header="Confirmação" modal footer={deleteContatoDialogFooter} onHide={hideDeleteCandidatoDialog}>
+                <div className="confirmation-content">
+                    <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem'}} />
+                    {contato && <span>Tem certeza de que deseja excluir?</span>}
+                </div>
+            </Dialog>
 
             <Dialog visible={deleteCandidatosDialog} style={{ width: '450px' }} header="Confirmação" modal footer={deleteCandidatosDialogFooter} onHide={hideDeleteCandidatosDialog}>
                 <div className="confirmation-content">
@@ -376,6 +591,26 @@ const DataTableCrudCandidato = () => {
                     {candidato && <span>Tem certeza de que deseja excluir os candidatos selecionados?</span>}
                 </div>
             </Dialog>
+
+            {/* Contatos dialog */}
+            <Dialog visible={contatoDialog} style={{ width: '50%' }} header="Contatos" modal className="p-fluid card" footer={contatoDialogFooter} onHide={hideDialogContatos}>
+                
+                <div className="grid card flex justify-content-center">
+                    <div className="col-4 md:col-4 lg:col-4">
+                        <label htmlFor="tipo">Tipo</label>
+                        <Dropdown value={selectedTipoContato} options={tiposContatosOpcoes} onChange={(e)=>carregaInputContato(e.value)} optionLabel="name" className={classNames({ 'p-invalid': submittedContato && !selectedTipoContato })}/>
+                    {submittedContato && !selectedTipoContato && <small className="p-error">Por favor selecione um tipo</small>}
+                    </div>
+                    <div className="col-6 md:col-6 lg:col-6">
+                        <label htmlFor="valor">Valor</label>
+                                {mostraInput ? ( <><InputMask id="valor" mask="(99) 9 9999-9999" type="text" placeholder="(99) 9 9999-9999" value={contato.valor} onChange={(e) => onInputChangeContato(e, 'valor')} className={classNames({ 'p-invalid': submittedContato && !contato.valor})} />
+                                {submittedContato && !contato.valor && <small className="p-error">Por favor insira um número.</small>}</>):( <><InputText id="valor" placeholder="exemple@email.com" type="email" value={contato.valor} onChange={(e) => onInputChangeContato(e, 'valor')} className={classNames({ 'p-invalid': submittedContato && !contato.valor})} />
+                                {submittedContato && !contato.valor && <small className="p-error">Por favor insira um e-mail válido.</small>}</>)}
+                    </div>
+                </div>
+            </Dialog>
+
+            {/* Contatos dialog */}
         </div>
     );
 }
