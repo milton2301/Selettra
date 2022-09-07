@@ -9,7 +9,7 @@ import { Toolbar } from 'primereact/toolbar';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { InputMask } from 'primereact/inputmask';
-import {Dropdown } from 'primereact/dropdown';
+import { Dropdown } from 'primereact/dropdown';
 import './DataTableDemo.css';
 import axios from 'axios';
 
@@ -55,7 +55,9 @@ const DataTableCrudCandidato = () => {
     const [selectedSexo, setSelectedSexo] = useState(null);
     const [selectedTipoContato, setSelectedTipoContato] = useState(null);
     const [selectedEstadoCivil, setSelectedEstadoCivil] = useState(null);
-    const [mostraInput, setMostraInput]=useState(false)
+    const [mostraInput, setMostraInput] = useState(false)
+    const [cardFile, setCardFile] = useState([]);
+    const [curriculumName, setCurriculumName]=useState(null);
     const toast = useRef(null);
     const dt = useRef(null);
     const load = useRef(null);
@@ -150,6 +152,7 @@ const DataTableCrudCandidato = () => {
                 fetchAllcandidatos();
                 setSelectedEstadoCivil(null);
                 setSelectedSexo(null);
+                newFile()
             }
         }
         if(load.current){
@@ -229,6 +232,8 @@ const DataTableCrudCandidato = () => {
         setSelectedEstadoCivil(null)
         setContatos(null)
         setCandidato(emptyCandidato)
+        setCardFile(null)
+        setCurriculumName(null)
     }
     
     const hideDialogContatos = () => {
@@ -393,7 +398,6 @@ const DataTableCrudCandidato = () => {
         )
     }
 
-
     const leftToolbarTemplateContatos = () => {
         return (
             <React.Fragment>
@@ -507,6 +511,79 @@ const DataTableCrudCandidato = () => {
         {name:"Telefone", value:"Telefone"},
         {name:"WhatsApp", value:"WhatsApp"},
     ]
+
+    
+    const handleUploadFile = (e) => {
+        setCardFile(e.target.files[0])
+        setCurriculumName(e.target.files[0].name)
+    };
+    
+    const removeArq = () => {
+        setCardFile(null)
+        setCurriculumName(null)
+    }
+
+    const newFile = async () => {
+        load.current = true
+        async function newFile() {
+            const response = await Api.post("/anexos", {
+                usercad: "Usuário",
+                idcandidato: candidato.id,
+                nomeoriginal: curriculumName,
+            })
+            if (response.data !== null) {
+                addNewCard(response.data.id)
+            }
+        }
+
+        if (load.current) {
+            newFile()
+        }
+
+        load.current =false
+      };
+
+
+      const saveFile = async (id, namefile) => {
+        load.current = true
+        async function save() {
+            const response = await Api.post("/anexos/{id}/atualizar", {
+                id: id,
+                nomeapi: namefile,
+            })
+            if (response.data === true) {
+                
+            }
+        }
+
+        if (load.current) {
+            save()
+        }
+
+        load.current =false
+      };
+    
+
+    const addNewCard = (id) => {
+        load.current = true
+        const arquivo = new FormData();
+        arquivo.append("file", cardFile);
+        async function save() {
+            const response = await Api.post("/anexos/upload", arquivo,{
+                headers: {
+                  'Content-Type': 'multipart/form-data'
+                }
+            })
+            if (response.data !== null) {
+                saveFile(id, response.data)
+            }
+        }
+
+        if(load.current){save()}
+
+        load.current =false
+      };
+
     return (
         <div className="datatable-crud">
             <Toast ref={toast} />
@@ -567,7 +644,12 @@ const DataTableCrudCandidato = () => {
                     <label htmlFor="estadocivil">Estado Civil</label>
                     <Dropdown value={selectedEstadoCivil} options={estadoCivilOpcoes} onChange={(e)=>setSelectedEstadoCivil(e.value)} optionLabel="name" className={classNames({ 'p-invalid': submitted && !selectedEstadoCivil })}/>
                     {submitted && !selectedSexo && <small className="p-error">Estado Civil is required.</small>}
-                </div>
+                    </div>
+                    <div className="col-6 md:col-6 lg:col-6">
+                    <label className="labelarq" for="arquivo">Enviar Curriculum</label>
+                        <input type="file" name="arquivo" id="arquivo" onChange={handleUploadFile} class="arquivo" />
+                        {curriculumName ? (<small className="text-green-500 font-italic">{curriculumName} <Button className="p-button-text p-button-sm" icon="pi pi-times" onClick={removeArq} /></small>):(<small className="p-error font-italic">Nenhum arquivo selecionado!</small>)}
+                    </div>
                 </div>
             </Dialog>
 
@@ -611,6 +693,7 @@ const DataTableCrudCandidato = () => {
             </Dialog>
 
             {/* Contatos dialog */}
+        
         </div>
     );
 }

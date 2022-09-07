@@ -1,3 +1,18 @@
+input[type="file"] {
+    display: none;
+}
+.labelarq {
+    padding: .5em .5em;
+    width: 80%;
+    background-color: #333;
+    color: #FFF;
+    text-transform: uppercase;
+    border-radius: .3rem;
+    text-align: center;
+    display: block;
+    margin-top: 1.3em;
+    cursor: pointer;
+}
 
 /* DataTableDemo.css */
 
