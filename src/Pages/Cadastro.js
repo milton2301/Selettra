@@ -43,6 +43,7 @@ const DataTableCrudCandidato = () => {
     const [contatos, setContatos] = useState(null);
     const [candidatoDialog, setCandidatoDialog] = useState(false);
     const [contatoDialog, setContatoDialog] = useState(false);
+    const [verContatoDialog, setVerContatoDialog] = useState(false);
     const [deleteCandidatoDialog, setDeleteCandidatoDialog] = useState(false);
     const [deleteContatoDialog, setDeleteContatoDialog] = useState(false);
     const [deleteCandidatosDialog, setDeleteCandidatosDialog] = useState(false);
@@ -57,7 +58,9 @@ const DataTableCrudCandidato = () => {
     const [selectedEstadoCivil, setSelectedEstadoCivil] = useState(null);
     const [mostraInput, setMostraInput] = useState(false)
     const [cardFile, setCardFile] = useState([]);
-    const [curriculumName, setCurriculumName]=useState(null);
+    const [curriculumName, setCurriculumName] = useState(null);
+    const [mostraArquivos, setMostraArquivos] = useState(false)
+    const [arquivos, setArquivos]= useState(null)
     const toast = useRef(null);
     const dt = useRef(null);
     const load = useRef(null);
@@ -152,8 +155,7 @@ const DataTableCrudCandidato = () => {
                 fetchAllcandidatos();
                 setSelectedEstadoCivil(null);
                 setSelectedSexo(null);
-                newFile()
-            }
+                addNewCard()            }
         }
         if(load.current){
             save()
@@ -234,8 +236,13 @@ const DataTableCrudCandidato = () => {
         setCandidato(emptyCandidato)
         setCardFile(null)
         setCurriculumName(null)
+        setMostraArquivos(false)
     }
     
+    const hideVerArquivos = () => {
+        setVerContatoDialog(false)
+    }
+
     const hideDialogContatos = () => {
         setContatoDialog(false)
         setSelectedTipoContato(null)
@@ -286,6 +293,7 @@ const DataTableCrudCandidato = () => {
         setCandidato({...candidato});
         setSelectedSexo(candidato.sexo);
         fetchContatoscandidato(candidato.id)
+        listFilesCandidatos(candidato.id)
         setSelectedEstadoCivil(candidato.estadocivil)
         setCandidatoDialog(true);
     }
@@ -425,6 +433,15 @@ const DataTableCrudCandidato = () => {
         );
     }
 
+    const actionBodyTemplateAnexos = (rowData) => {
+        return (
+            <React.Fragment>
+                <Button icon="pi pi-download" className="p-button w-6 p-button-success p-button-outlined" onClick={() => baixarAnexo(rowData)} />
+            </React.Fragment>
+        );
+    }
+
+
     const header = (
         <div className="table-header">
             <h5 className="mx-0 my-1">Candidatos Cadastrados</h5>
@@ -443,24 +460,16 @@ const DataTableCrudCandidato = () => {
 
     const candidatoDialogFooter = (
         <React.Fragment>
-            <div className="grid ">
+            <div className="grid">
                 <div className="col-6 md:col-6 lg:col-6">
-                <div className="datatable-crud">
-                    <div className="card">
-                    <Toolbar left={leftToolbarTemplateContatos}></Toolbar>
-                    <DataTable value={contatos} selection                     dataKey="id"  header={headerContatos} responsiveLayout="scroll">
-                        <Column field="id" header="Código"></Column>
-                        <Column field="tipo" header="Tipo"></Column>
-                        <Column field="valor" header="Contato"></Column>
-                        <Column body={actionBodyTemplateConatatos} header="Excluir"></Column>
-                    </DataTable>
+                <Button className="p-button-text" label="Ver" onClick={()=>setVerContatoDialog(true)}/>
                 </div>
-            </div>
-                </div>
-                <div className="col-6 md:col-6 lg:col-6"></div>
-            </div>
-            <Button label="Cancelar" icon="pi pi-times" className="p-button-text" onClick={hideDialog} />
+                <div className="col-6 md:col-6 lg:col-6">
+                <Button label="Cancelar" icon="pi pi-times"
+            className="p-button-text" onClick={hideDialog} />
             <Button label="Salvar" icon="pi pi-check" className="p-button-text" onClick={saveCandidato} />
+                </div>
+            </div>
         </React.Fragment>
     );
 
@@ -523,59 +532,33 @@ const DataTableCrudCandidato = () => {
         setCurriculumName(null)
     }
 
-    const newFile = async () => {
-        load.current = true
-        async function newFile() {
-            const response = await Api.post("/anexos", {
-                usercad: "Usuário",
-                idcandidato: candidato.id,
-                nomeoriginal: curriculumName,
-            })
-            if (response.data !== null) {
-                addNewCard(response.data.id)
-            }
-        }
 
-        if (load.current) {
-            newFile()
-        }
-
-        load.current =false
-      };
-
-
-      const saveFile = async (id, namefile) => {
+      const saveFile = async (id) => {
         load.current = true
         async function save() {
-            const response = await Api.post("/anexos/{id}/atualizar", {
+            const response = await Api.post(`/anexos/${id}/atualizar`, {
                 id: id,
-                nomeapi: namefile,
+                idcandidato: candidato.id,
             })
             if (response.data === true) {
-                
+                listFilesCandidatos(candidato.id)
             }
         }
-
         if (load.current) {
             save()
         }
-
         load.current =false
       };
     
 
-    const addNewCard = (id) => {
+    const addNewCard = () => {
         load.current = true
         const arquivo = new FormData();
         arquivo.append("file", cardFile);
         async function save() {
-            const response = await Api.post("/anexos/upload", arquivo,{
-                headers: {
-                  'Content-Type': 'multipart/form-data'
-                }
-            })
+            const response = await Api.post("anexos/uploads",arquivo)
             if (response.data !== null) {
-                saveFile(id, response.data)
+                saveFile(response.data)
             }
         }
 
@@ -583,6 +566,47 @@ const DataTableCrudCandidato = () => {
 
         load.current =false
       };
+
+    const listFilesCandidatos = (id) => {
+        load.current = true;
+        async function list() {
+            const result = await Api.post("/anexos/procurar", { 
+                idcandidato: parseInt(id)
+            })
+            if (result.data.length > 0) {
+                setArquivos(result.data)
+                setMostraArquivos(true)
+            }
+        }
+        if (load.current) {
+            list()
+        }
+        load.current=false
+    }
+
+    const baixarAnexo = (dados) => {
+        load.current = true;
+        async function getEvidencia() { 
+            let fileName = dados.nomeoriginal;
+            let id = dados.id;
+            Promise.all(
+                [ await Api.get("anexos/" + id + "/anexodownload", { responseType: 'blob'})]
+                ).then((response) => response[0].data
+                ).then(blob => {
+                    var file = window.URL.createObjectURL(blob);               
+                    var fileLink = document.createElement('a');
+                    fileLink.href = file;
+                    fileLink.download = fileName;
+                    fileLink.click();
+                    fileLink.remove();                    
+                });                                  
+        }
+        if (load.current) {
+            getEvidencia();
+        }
+        load.current = false;
+
+    }
 
     return (
         <div className="datatable-crud">
@@ -648,7 +672,14 @@ const DataTableCrudCandidato = () => {
                     <div className="col-6 md:col-6 lg:col-6">
                     <label className="labelarq" for="arquivo">Enviar Curriculum</label>
                         <input type="file" name="arquivo" id="arquivo" onChange={handleUploadFile} class="arquivo" />
-                        {curriculumName ? (<small className="text-green-500 font-italic">{curriculumName} <Button className="p-button-text p-button-sm" icon="pi pi-times" onClick={removeArq} /></small>):(<small className="p-error font-italic">Nenhum arquivo selecionado!</small>)}
+                        {curriculumName ? (<small className="text-green-500 font-italic">{curriculumName} <Button className="p-button-text p-button-sm" icon="pi pi-times" onClick={removeArq} /></small>) : (<small className="p-error font-italic">Nenhum arquivo selecionado!</small>)}
+                        
+                        {mostraArquivos ? (<>
+                            <DataTable value={arquivos}>
+                                <Column field="nomeoriginal" header="Nome"></Column>
+                                <Column header="Baixar" body={actionBodyTemplateAnexos}></Column>
+                        </DataTable>
+                        </>) : (<></>)}
                     </div>
                 </div>
             </Dialog>
@@ -692,13 +723,34 @@ const DataTableCrudCandidato = () => {
                 </div>
             </Dialog>
 
+            <Dialog visible={verContatoDialog} style={{ width: '50%' }} header="Contatos" modal className="p-fluid card" onHide={hideVerArquivos}>
+
+                <div className="grid card flex justify-content-center">
+                <div className="grid ">
+                <div className="col-12 md:col-12 lg:col-12">
+                <div className="datatable-crud">
+                    <div className="card">
+                    <Toolbar left={leftToolbarTemplateContatos}></Toolbar>
+                    <DataTable value={contatos} selection                     dataKey="id"  header={headerContatos} responsiveLayout="scroll">
+                        <Column field="tipo" header="Tipo"></Column>
+                        <Column field="valor" header="Contato"></Column>
+                        <Column body={actionBodyTemplateConatatos} header="Excluir"></Column>
+                    </DataTable>
+                    </div>
+                    </div>
+                </div>
+             </div>
+                </div>
+            </Dialog>
+
+
             {/* Contatos dialog */}
         
         </div>
     );
 }
 
-export default function Cadastro(){
+export default function Cadastro() {
     return <div className="card">
         <DataTableCrudCandidato/>
     </div>
