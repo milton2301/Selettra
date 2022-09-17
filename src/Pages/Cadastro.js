@@ -597,8 +597,7 @@ const DataTableCrudCandidato = () => {
                     var fileLink = document.createElement('a');
                     fileLink.href = file;
                     fileLink.download = fileName;
-                    fileLink.click();
-                    fileLink.remove();                    
+                    fileLink.click();      
                 });                                  
         }
         if (load.current) {
@@ -676,8 +675,8 @@ const DataTableCrudCandidato = () => {
                         
                         {mostraArquivos ? (<>
                             <DataTable value={arquivos}>
-                                <Column field="nomeoriginal" header="Nome"></Column>
-                                <Column header="Baixar" body={actionBodyTemplateAnexos}></Column>
+                                <Column field="nomeoriginal" className="text-center" header="Nome"></Column>
+                                <Column header="Baixar" className="text-center" body={actionBodyTemplateAnexos}></Column>
                         </DataTable>
                         </>) : (<></>)}
                     </div>
