@@ -12,6 +12,8 @@ import Header from './Layout/Header';
 
 /***Impore from pages****/
 import Cadastro from './Pages/Cadastro'
+import Vagas from './Pages/Vagas';
+import Candidaturas from './Pages/Candidaturas'
 /***Impore from pages****/
 
 export default function App() {
@@ -23,6 +25,8 @@ export default function App() {
           <Routes>
           <Route exact path="/" element={""}/>
           <Route path="/cadastro" element={<Cadastro/>}/>
+          <Route path="/vaga" element={<Vagas/>}/>
+          <Route path="/candidaturas" element={<Candidaturas/>}/>
           </Routes>
     </Router>
     </div>

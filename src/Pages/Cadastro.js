@@ -269,7 +269,7 @@ const DataTableCrudCandidato = () => {
         load.current =false
     }
 
-    const dropCandidatos=(id)=>{
+    const dropCandidato=(id)=>{
         load.current = true
             async function drop(){
                 const response = await Api.post(`candidatos/${id}/excluir`,{
@@ -396,7 +396,7 @@ const DataTableCrudCandidato = () => {
          
             if (candidato.id) {
                 const index = findIndexById(candidato.id);
-                if(index > 0){
+                if(index >= 0){
 
                     saveDataCandidatos(candidato.id)
                     toast.current.show({ severity: 'success', summary: 'Sucesso', detail: 'Candidato Atualizado', life: 3000 });
@@ -457,9 +457,9 @@ const DataTableCrudCandidato = () => {
 
     const deleteCandidato = () => {
         let _candidatos = candidatos.filter(val => val.id !== candidato.id);
-        let _roemoveCandidatos = candidatos.filter(val => val.id === candidato.id);
-        let id = _roemoveCandidatos[0].id
-        dropCandidatos(id)
+        let _removeCandidatos = candidatos.filter(val => val.id === candidato.id);
+        let id = _removeCandidatos[0].id
+        dropCandidato(id)
         setCandidatos(_candidatos);
         setDeleteCandidatoDialog(false);
         setCandidato(emptyCandidato);
@@ -507,7 +507,7 @@ const DataTableCrudCandidato = () => {
     const deleteSelectedCandidatos = () => {
         let _candidatos = candidatos.filter(val => !selectedCandidatos.includes(val));
         Array.from(selectedCandidatos).forEach((val)=>{
-            dropCandidatos(val.id)
+            dropCandidato(val.id)
         })
         setCandidatos(_candidatos);
         setDeleteCandidatosDialog(false);
@@ -648,10 +648,10 @@ const DataTableCrudCandidato = () => {
             <div className="grid text-center">
                 <div className="col-12 md:col-6 lg:col-1"></div>
                 <div className="col-12 md:col-6 lg:col-4">
-                    <Button className="p-button-text" label="Ver dados de Contatos" onClick={()=>setVerContatoDialog(true)}/>
+                    <Button className="p-button-warning" label="Ver dados de Contatos" onClick={()=>setVerContatoDialog(true)}/>
                 </div>
                 <div className="col-12 md:col-6 lg:col-4">
-                    <Button className="p-button-text" label="Ver dados de Endereço" onClick={()=>setVerEnderecoDialog(true)}/>
+                    <Button className="p-button-primary" label="Ver dados de Endereço" onClick={()=>setVerEnderecoDialog(true)}/>
                 </div>
                 </div>
             <div className="grid text-center">
@@ -879,7 +879,6 @@ const DataTableCrudCandidato = () => {
                     <Column field="nome" header="Nome" sortable style={{ minWidth: '16rem' }}></Column>
                     <Column field="idade" header="Idade" sortable style={{ minWidth: '16rem' }}></Column>
                     <Column field="sexo" header="Sexo" sortable style={{ minWidth: '16rem' }}></Column>
-                    <Column field="estadocivil" header="Estado Civil" sortable style={{ minWidth: '16rem' }}></Column>
                     <Column header="Ações" body={actionBodyTemplate} exportable={false} style={{ minWidth: '8rem' }}></Column>
                 </DataTable>
             </div>
@@ -1094,6 +1093,7 @@ const DataTableCrudCandidato = () => {
 
 export default function Cadastro() {
     return <div className="card">
+        <div className="card text-center"><h3>Cadastro de Candidatos</h3></div>
         <DataTableCrudCandidato/>
     </div>
 }

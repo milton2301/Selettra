@@ -16,8 +16,9 @@ export default function Header(){
         {
             label: 'Cadastro', icon: 'pi pi-fw pi-plus',
             items: [{label: 'Candidato', icon: 'pi pi-fw pi-user-plus',command:()=>{ window.location="/cadastro"; }},
-                    {label: 'Vaga', icon: 'pi pi-fw pi-briefcase', command:()=>{ window.location="/cadastro"; }}]
-        }
+                    {label: 'Vaga', icon: 'pi pi-fw pi-briefcase', command:()=>{ window.location="/vaga"; }}]
+        },
+        { label: 'Candidaturas', icon: 'pi pi-fw pi-file', command: () => { window.location = "/candidaturas"; } }
     ]
 
 const img =()=>{
