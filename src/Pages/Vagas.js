@@ -255,8 +255,8 @@ const DataTableCrudVaga = () => {
     );
     const vagaDialogFooter = (
         <React.Fragment>
-            <Button label="Cancel" icon="pi pi-times" className="p-button-text" onClick={hideDialog} />
-            <Button label="Save" icon="pi pi-check" className="p-button-text" onClick={saveVaga} />
+            <Button label="Cancelar" icon="pi pi-times" className="p-button-text" onClick={hideDialog} />
+            <Button label="Salvar" icon="pi pi-check" className="p-button-text" onClick={saveVaga} />
         </React.Fragment>
     );
     const deleteVagaDialogFooter = (

@@ -64,3 +64,37 @@ input[type="file"] {
         width: 100%;
     }
 }
+
+.clasobs {
+    color: #000;
+    background: rgb(240, 240, 240);
+    width: 100%;
+    padding: 0em;
+    border-radius: 3px;
+    margin-bottom: 1.5em;
+}
+
+
+.btn {
+    border: none;
+    padding: 10px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background .3s;
+    border-radius: 5px;
+}
+
+.btn-danger {
+    background-color: rgb(200, 75, 75);
+    outline: none;
+    color: rgb(58, 22, 22);
+}
+
+.btn-succdangeress:hover {
+    background-color: rgb(158, 116, 116);
+}
+
+.btn-danger:active {
+    color: rgb(200, 75, 75);
+    background-color: rgb(58, 22, 22);
+}

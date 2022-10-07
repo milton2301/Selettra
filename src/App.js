@@ -13,7 +13,7 @@ import Header from './Layout/Header';
 /***Impore from pages****/
 import Cadastro from './Pages/Cadastro'
 import Vagas from './Pages/Vagas';
-import Candidaturas from './Pages/Candidaturas'
+import Candidatures from './Pages/Candidatures'
 /***Impore from pages****/
 
 export default function App() {
@@ -26,7 +26,7 @@ export default function App() {
           <Route exact path="/" element={""}/>
           <Route path="/cadastro" element={<Cadastro/>}/>
           <Route path="/vaga" element={<Vagas/>}/>
-          <Route path="/candidaturas" element={<Candidaturas/>}/>
+          <Route path="/candidaturas" element={<Candidatures/>}/>
           </Routes>
     </Router>
     </div>
