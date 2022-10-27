@@ -9,7 +9,6 @@ import { Toolbar } from 'primereact/toolbar';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea'
-import { InputNumber } from 'primereact/inputnumber';
 import { Dropdown } from 'primereact/dropdown';
 import './DataTableDemo.css';
 import axios from 'axios';
@@ -533,13 +532,16 @@ const DataTableCrud = () => {
             <Dialog visible={candidaturaDialog} style={{ width: '80%' }} header="Detalhes da Candidatura" modal className="p-fluid card" footer={candidaturaDialogFooter} onHide={hideDialog}>
                 <div className="grid">
                 <div className="field col-12 md:col-6 lg:col-4">
-                <label htmlFor="candidato">Candidato</label>
-                    <Dropdown value={selectedCandidato} options={opcoesCandidato} onChange={(e)=>setSelectedCandidato(e.value)} optionLabel="nome" className={classNames({ 'p-invalid': submitted && !selectedCandidato })}/>
+                        <label htmlFor="candidato">Candidato</label>
+                        
+
+                    <Dropdown value={selectedCandidato} options={opcoesCandidato} onChange={(e) =>setSelectedCandidato(e.value)} optionLabel="nome" filter showClear filterBy="nome" placeholder="Selecione um candidato"className={classNames({ 'p-invalid': submitted && !selectedCandidato })}/>
                     {submitted && !selectedCandidato && <small className="p-error">Candidato é obrigatório.</small>}
+                        
                     </div>
                     <div className="field col-12 md:col-6 lg:col-4">
                 <label htmlFor="vaga">Vaga</label>
-                    <Dropdown value={selectedVaga} options={opcoesVaga} onChange={(e)=>setSelectedVaga(e.value)} optionLabel="nome" className={classNames({ 'p-invalid': submitted && !selectedVaga })}/>
+                    <Dropdown value={selectedVaga} options={opcoesVaga} onChange={(e)=>setSelectedVaga(e.value)} optionLabel="nome" filter showClear filterBy="nome" placeholder="Selecione uma vaga" className={classNames({ 'p-invalid': submitted && !selectedVaga })}/>
                     {submitted && !selectedVaga && <small className="p-error">Vaga é obrigatório.</small>}
                     </div>
                     <div className="field col-12 md:col-6 lg:col-4">
